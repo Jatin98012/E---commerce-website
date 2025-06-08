@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mini E-commerce Store</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>My Store</h1>
+    <div id="cart-icon">🛒 Cart (<span id="cart-count">0</span>)</div>
+  </header>
+
+  <main id="product-list"></main>
+
+  <div id="cart">
+    <h2>Your Cart</h2>
+    <ul id="cart-items"></ul>
+    <h3>Total
+<h2>Login</h2>
+<form id="login-form">
+  <input type="text" id="username" placeholder="Username" required />
+  <input type="password" id="password" placeholder="Password" required />
+  <button type="submit">Login</button>
+</form>
+<p id="message"></p>
+<script>
+document.getElementById('login-form').onsubmit = async (e) => {
+  e.preventDefault();
+  const res = await fetch('http://localhost:5000/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      username: document.getElementById('username').value,
+      password: document.getElementById('password').value
+    })
+  });
+
+  const data = await res.json();
+  if (data.token) {
+    localStorage.setItem('token', data.token);
+    location.href = data.role === 'admin' ? 'admin.html' : 'index.html';
+  } else {
+    document.getElementById('message').textContent = data.error;
+  }
+};
+</script>
+<h2>Admin Panel - Add Product</h2>
+<form id="product-form">
+  <input type="text" id="name" placeholder="Product Name" required />
+  <input type="number" id="price" placeholder="Price" required />
+  <input type="text" id="image" placeholder="Image URL" required />
+  <button type="submit">Add Product</button>
+</form>
+<p id="status"></p>
+<script>
+document.getElementById('product-form').onsubmit = async (e) => {
+  e.preventDefault();
+  const res = await fetch('http://localhost:5000/api/products', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + localStorage.getItem('token')
+    },
+    body: JSON.stringify({
+      name: document.getElementById('name').value,
+      price: parseFloat(document.getElementById('price').value),
+      image: document.getElementById('image').value
+    })
+  });
+
+  const data = await res.json();
+  document.getElementById('status').textContent = data.name
+    ? 'Product added!'
+    : data.error || 'Error';
+};
+</script>
